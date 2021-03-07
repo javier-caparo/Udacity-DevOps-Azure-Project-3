@@ -40,11 +40,37 @@ az login
 az account list --output table
 ```
 
-3. To create a  Service Principal with **Contributor** role, perform the following steps:
+3. Configure storage account to Store Terraform state
+
+* Execute the script **azure-storage-account.sh** :
+
+```bash
+./azure-storage-account.sh
+```
+
+* Take notes of
+storage_account_name: tstate3994
+container_name: tstate
+access_key: j/bg+StBWOPqf5fQCPF+tCLFeGURmKEnE675v4aVN1RzyUW3+wlFLrq/dTon4XPrCRKMl5/Z79qNRGR7ZHBPQw==
+
+5. Create a Log Analytics workspace
+
+```bash
+
+```
+
+4. To create a  Service Principal with **Contributor** role, perform the following steps:
 
 ```bash
 az ad sp create-for-rbac --name="UdacityProject3" --role="Contributor" 
 ```
 
-> Take notes of **appId**, **password**, and **tenant* as will be used later on terraform
+> Take notes of **appId**, **password**, and **tenant** as will be used later on terraform
+
+6.  On your terminal create a SSH key
+
+```bash
+ssh-keygen -t rsa
+cat ~/.ssh/id_rsa.pub
+```
 
