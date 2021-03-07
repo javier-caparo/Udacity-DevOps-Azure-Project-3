@@ -48,10 +48,11 @@ az account list --output table
 ./azure-storage-account.sh
 ```
 
-* Take notes of
-storage_account_name: tstate3994
-container_name: tstate
-access_key: j/bg+StBWOPqf5fQCPF+tCLFeGURmKEnE675v4aVN1RzyUW3+wlFLrq/dTon4XPrCRKMl5/Z79qNRGR7ZHBPQw==
+* Take notes of **storage_account_name**, **container_name**, **access_key**
+
+> storage_account_name: tstate3994
+> container_name: tstate
+> access_key: j/bg+StBWOPqf5fQCPF+tCLFeGURmKEnE675v4aVN1RzyUW3+wlFLrq/dTon4XPrCRKMl5/Z79qNRGR7ZHBPQw==
 
 5. Create a Log Analytics workspace
 

@@ -9,7 +9,7 @@ terraform {
   backend "azurerm" {
     storage_account_name = "tstate3994"
     container_name       = "tstate"
-    key                  = "tstate"
+    key                  = "terraform.tfstate"
     access_key           = "j/bg+StBWOPqf5fQCPF+tCLFeGURmKEnE675v4aVN1RzyUW3+wlFLrq/dTon4XPrCRKMl5/Z79qNRGR7ZHBPQw=="
   }
 }
