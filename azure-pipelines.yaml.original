@@ -1,0 +1,203 @@
+name: Azure Pipelines
+variables:
+  python.version: "3.8.5"
+stages:
+  - stage: Build
+    jobs:
+      - job: Build
+        pool:
+          name: Hosted Ubuntu 1804
+        steps:
+          - task: InstallSSHKey@0
+            inputs:
+              knownHostsEntry: "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ=="
+              sshPublicKey: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCxk0N0whzgiOTrcAdHsjgfCr4+LkO7D2mo9/dDJ+Nz/wf2c+V8HYy0U4xXGoYSbGBCfjHNZzj7vmHP3nhNMabWVALOjjGDyTnb/F+hkpiwfp6vwXjjrLcyvoFv9J8VnPZXVMuA2vveVckkrAbo+a2/u425v55KWkqqNuzJIDEVT8/1FJefaE6LK/NMo1zswlGUxDn2+o2pEDGRc2S/2B/s9I0RVPFpaqVFWNnF/JmtOhetWhwZbHvXof3tXcIo6LzY2NET3FyES5TlOMhLdJaKWssAGsZfM8Nfo92yZ0LNAk8V2o4S8RCFYIiABi5yvxs4N1/Cz4uEbqnF/wF+t4N5"
+              sshKeySecureFile: "id_rsa"
+
+          - task: Bash@3
+            displayName: "Run Postman tests"
+            inputs:
+              targetType: "inline"
+              script: |
+                #! /bin/bash
+
+                # ------------- Install Dependencies -------------
+                sudo apt-get upgrade -y
+                sudo npm install -g newman reporter
+
+                # ------------- Run Postman tests -------------
+                echo "Clearing tests folder"
+                sudo rm -rf newman/*
+                echo "Running Regression tests ..."
+                newman run postman/Regression_Tests.postman_collection.json -e postman/FakeRestAPI_Postman_environment.json --reporters cli,junit
+                echo "Running Data Validation tests ..."
+                newman run postman/Data_Validation_Tests.postman_collection.json -e postman/FakeRestAPI_Postman_environment.json --reporters cli,junit
+
+          - task: PublishTestResults@2
+            displayName: "Publish Test Results"
+            inputs:
+              testResultsFormat: "JUnit"
+              testResultsFiles: "newman/newman-*.xml"
+
+          - task: ArchiveFiles@2
+            displayName: "Archive FakeRestAPI"
+            inputs:
+              rootFolderOrFile: "./fakerestapi"
+              includeRootFolder: false
+              archiveType: "zip"
+              archiveFile: "$(Build.ArtifactStagingDirectory)/$(Build.BuildId)-fakerestapi.zip"
+          - publish: $(Build.ArtifactStagingDirectory)/$(Build.BuildId)-fakerestapi.zip
+            displayName: "Upload Package"
+            artifact: drop-fakerestapi
+
+          - task: ArchiveFiles@2
+            displayName: "Archive Entire Project"
+            inputs:
+              rootFolderOrFile: "./"
+              includeRootFolder: true
+              archiveType: "zip"
+              archiveFile: "$(Build.ArtifactStagingDirectory)/$(Build.BuildId)-project.zip"
+          - publish: $(Build.ArtifactStagingDirectory)/$(Build.BuildId)-project.zip
+            displayName: "Upload Package"
+            artifact: drop-project
+
+  - stage: Deploy
+    jobs:
+      - deployment: FakeRestAPI
+        pool:
+          vmImage: "Ubuntu-18.04"
+        environment: "TEST"
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: AzureWebApp@1
+                  displayName: "Deploy Azure Web App"
+                  inputs:
+                    azureSubscription: "69c056e3-3492-4df2-9184-9b34ec11c1ba"
+                    appName: "Test-Udacity-JC-AppService"
+                    appType: webApp
+                    package: $(Pipeline.Workspace)/drop-fakerestapi/$(Build.BuildId)-fakerestapi.zip
+
+      - deployment: VMDeploy
+        displayName: CITesting
+        environment:
+          name: CITESTING
+          resourceType: VirtualMachine
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: DownloadPipelineArtifact@2
+                  inputs:
+                    artifact: "drop-project"
+                    path: $(Build.SourcesDirectory)
+
+                - task: Bash@3
+                  displayName: "Install Dependencies"
+                  inputs:
+                    targetType: "inline"
+                    script: |
+                      #! /bin/bash
+
+                      # ------------- Install Dependencies -------------
+                      sudo apt update && sudo apt upgrade -y
+                      sudo apt install python3-pip -y
+                      sudo apt install unzip -y
+                      sudo apt install -y chromium-browser
+                      pip3 install selenium
+
+                      # ------------- Install Jmeter -------------
+                      if test -f "/usr/bin/jmeter"
+                      then
+                        echo 'Jmeter already installed'
+                      else
+                        echo "Changing directory to /home/udacity ..."
+                        cd /home/udacity                        
+                        echo "Downloading Jmeter ..."
+                        wget https://downloads.apache.org//jmeter/binaries/apache-jmeter-5.3.tgz
+
+                        echo "Unpacking jmeter tgz ..."
+                        tar -xzvf apache-jmeter-5.3.tgz
+                        echo "Create symlink to jmeter bin file"
+                        sudo ln -s /home/udacity/apache-jmeter-5.3/bin/jmeter /usr/bin/jmeter
+                        echo "Removing jmeter tgz ..."
+                        sudo rm -rf apache-jmeter-5.3.tgz
+                      fi
+
+                      # ------------- Install Chromedriver -------------
+                      if test -f "usr/bin/chromedriver"
+                      then
+                        echo 'Chromedriver is already installed'
+                      else
+                        echo "Changing directory to /home/udacity ..."
+                        cd /home/udacity        
+                        wget https://chromedriver.storage.googleapis.com/85.0.4183.87/chromedriver_linux64.zip
+                        unzip chromedriver_linux64.zip
+                        sudo mv chromedriver -t /usr/bin
+                        echo "Removing chromedriver_linux64.zip ..."
+                        rm -rf chromedriver_linux64.zip
+                      fi
+
+                      if test -f "usr/bin/java"
+                      then
+                        echo "JRE is already installed"
+                      else
+                        echo "Install default JRE ..."
+                        sudo apt install default-jre -y
+                      fi
+
+                - task: ExtractFiles@1
+                  inputs:
+                    archiveFilePatterns: "$(Pipeline.Workspace)/drop-project/$(Build.BuildId)-project.zip"
+                    destinationFolder: "$(Pipeline.Workspace)/project"
+                    cleanDestinationFolder: true
+
+                - task: Bash@3
+                  displayName: "Run Selenium tests"
+                  inputs:
+                    targetType: "inline"
+                    script: |
+                      #! /bin/bash
+
+                      # ------------- Run Selenium tests -------------
+                      cd ..
+                      if test -f '/var/logs/selenium/selenium_log.txt'
+                      then
+                        sudo chmod 777 /var/logs/selenium/selenium_log.txt
+                        python3 project/s/selenium/selenium_test.py
+                      else
+                        echo "Creating selenium log file"
+                        sudo mkdir -p /var/logs/selenium
+                        sudo touch /var/logs/selenium/selenium_log.txt
+                        sudo chmod 775 -R /var/logs      
+                        sudo chmod 777 /var/logs/selenium/selenium_log.txt                  
+                        echo "Running selenium tests ..."
+                        python3 project/s/selenium/selenium_test.py
+                      fi
+
+                - task: Bash@3
+                  displayName: "Run Jmeter tests"
+                  inputs:
+                    targetType: "inline"
+                    script: |
+                      #! /bin/bash
+
+                      # --------- Preparing to run Jmeter tests HTML report dirs -------------
+                      echo "Changing into Project jmeter dir ..."
+                      cd $(Pipeline.Workspace)/project/s/jmeter
+                      echo "Creating HTML report directories ..."
+                      mkdir stress_test_html_report endurance_test_html_report
+                      echo "Clearing previous results and html reports ..."
+                      rm -rf *.csv stress_test_html_report/* endurance_test_html_report/*
+                      echo "Preparing to run Jmeter tests ..."
+
+                      # --------- Run stress test --------------
+                      echo "Running stress test ..."
+                      jmeter -n -t stress_test_suite.jmx -l stress_test_result.csv -e -o stress_test_html_report/
+                      echo "HTML report written to -----> jmeter/stress_test_html_report"
+
+                      # --------- Run endurance test --------------
+                      echo "Running endurance test ..."
+                      jmeter -n -t endurance_test_suite.jmx -l endurance_test_results.csv -e -o endurance_test_html_report/
+                      echo "HTML report written to -----> jmeter/endurance_test_html_report"

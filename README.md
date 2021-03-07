@@ -68,10 +68,39 @@ az ad sp create-for-rbac --name="UdacityProject3" --role="Contributor"
 
 > Take notes of **appId**, **password**, and **tenant** as will be used later on terraform
 
-6.  On your terminal create a SSH key
+7.  On your terminal create a SSH key
 
 ```bash
 ssh-keygen -t rsa
 cat ~/.ssh/id_rsa.pub
 ```
+
+```bash
+ssh-keyscan github.com
+```
+
+8. From the terminal, change into terraform directory
+
+```bash
+cd terraform
+```
+
+9. Execute terraform performing these commands in order:
+
+```bash
+terraform init
+terraform fmt
+terraform validate
+
+```
+
+10. Execute terraform to create the backend infraestructure
+
+```bash
+terraform plan
+terraform apply
+```
+
+
+11. Modify the Azure DevOps Pipeline
 

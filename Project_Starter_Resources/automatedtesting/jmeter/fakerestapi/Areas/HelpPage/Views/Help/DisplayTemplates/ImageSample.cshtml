@@ -1,4 +1,0 @@
-@using FakeRestAPI.Web.Areas.HelpPage
-@model ImageSample
-
-<img src="@Model.Src" />
