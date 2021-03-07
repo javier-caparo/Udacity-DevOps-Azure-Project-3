@@ -22,7 +22,7 @@ CI / CD Test Automation Pipeline - Azure DevOps - Terraform - JMeter -Selenium -
  - Azure Storage account (resource)
  - Azure Log Workspace (resource)
  - Terraform Service principle (resource)
- - Azure DevOps Organization
+ - Azure DevOps Organization ( https://azure.microsoft.com/en-us/services/devops/)
  - Azure CLI (resource)
 
 ## Steps
@@ -32,3 +32,19 @@ CI / CD Test Automation Pipeline - Azure DevOps - Terraform - JMeter -Selenium -
 ```sh
 git clone https://github.com/jfcb853/Udacity-DevOps-Azure-Project-3
 ```
+
+2. open a Terminal in VS Code and connect to your Azure Account and get the Subscription ID
+
+```bash
+az login 
+az account list --output table
+```
+
+3. To create a  Service Principal with **Contributor** role, perform the following steps:
+
+```bash
+az ad sp create-for-rbac --name="UdacityProject3" --role="Contributor" 
+```
+
+> Take notes of **appId**, **password**, and **tenant* as will be used later on terraform
+
