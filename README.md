@@ -122,6 +122,31 @@ terraform plan
 terraform apply
 ```
 
-
 11. Modify the Azure DevOps Pipeline
+
+* Add the Environment Resource
+
+```bash
+mkdir azagent;cd azagent;curl -fkSL -o vstsagent.tar.gz https://vstsagentpackage.azureedge.net/agent/2.183.1/vsts-agent-linux-x64-2.183.1.tar.gz;tar -zxvf vstsagent.tar.gz; if [ -x "$(command -v systemctl)" ]; then ./config.sh --environment --environmentname "TESTING" --acceptteeeula --agent $HOSTNAME --url https://dev.azure.com/javiercaparo574/ --work _work --projectname 'udacity-project-3' --auth PAT --token ngxxtqxo3viuio3qjt4mex3soe5v4nsxq7ehkskoe4gh6s6ecg7q --runasservice; sudo ./svc.sh install; sudo ./svc.sh start; else ./config.sh --environment --environmentname "TESTING" --acceptteeeula --agent $HOSTNAME --url https://dev.azure.com/javiercaparo574/ --work _work --projectname 'udacity-project-3' --auth PAT --token ngxxtqxo3viuio3qjt4mex3soe5v4nsxq7ehkskoe4gh6s6ecg7q; ./run.sh; fi
+```
+
+```bash
+Successfully added the agent
+Testing agent connection.
+....
+   Active: active (running) since Tue 2021-03-09 03:20:16 UTC; 13ms ago
+ Main PID: 2330 (runsvc.sh)
+    Tasks: 7 (limit: 4680)
+   CGroup: /system.slice/vsts.agent.javiercaparo574..ci\x2dcd\x2dtest\x2dautomation.service
+           ├─2330 /bin/bash /home/udacity/azagent/runsvc.sh
+           └─2333 ./externals/node10/bin/node ./bin/AgentService.js
+
+```
+
+* Create the Service Connection  in Project Settings > Pipelines > Service Connection
+
+> get the url to have the Service Connection ID:
+https://dev.azure.com/<organiztion>/<project>/_apis/serviceendpoint/endpoints?api-version=5.0-preview.2
+ 
+* Add the private secure id_rsa key in Library Secure files
 

@@ -17,7 +17,7 @@ variable "address_space" {}
 # VM
 variable "admin_username" {
   description = "The admin user name in the VM."
-  default = "udacity"
+  default     = "udacity"
 }
 
 variable "packer_image" {
