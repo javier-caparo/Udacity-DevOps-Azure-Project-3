@@ -25,7 +25,7 @@ stages:
     jobs:
       - job: BuildJob
         pool:
-          name: $(vmImageName)
+          name: 'ubuntu-latest'
         steps:
           - task: InstallSSHKey@0
             inputs:
