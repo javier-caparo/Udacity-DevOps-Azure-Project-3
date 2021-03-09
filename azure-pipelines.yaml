@@ -1,12 +1,31 @@
-name: Azure Pipelines
-variables:
-  python.version: "3.8.5"
+# Python to Linux Web App on Azure
+# Build your Python project and deploy it to Azure as a Linux Web App.
+# Change python version to one thats appropriate for your application.
+# https://docs.microsoft.com/azure/devops/pipelines/languages/python
+
+trigger:
+  - main
+  
+  variables:
+    # Azure Resource Manager connection created during pipeline creation
+    azureServiceConnectionId: ''
+  
+    # Agent VM image name
+    vmImageName: 'Ubuntu-18.04'
+  
+    # Project root folder. Point to the folder containing manage.py file.
+    projectRoot: $(System.DefaultWorkingDirectory)
+    
+    # Python version: 3.6
+    pythonVersion: '3.6.9'
+
 stages:
   - stage: Build
+    displayName: Build Stage
     jobs:
-      - job: Build
+      - job: BuildJob
         pool:
-          name: Hosted Ubuntu 1804
+          name: $(vmImageName)
         steps:
           - task: InstallSSHKey@0
             inputs:
