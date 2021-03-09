@@ -1,0 +1,185 @@
+{
+	"info": {
+		"_postman_id": "31010d8b-57fa-4963-9f1f-b0df447f9367",
+		"name": "Data Validation Tests",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Activities",
+			"item": [
+				{
+					"name": "Get Activities",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "d7b29b71-13fc-405a-a9fd-30335bff76b6",
+								"exec": [
+									"pm.test(\"Data Validation Test : Get All Activies - Response inlcudes atleast one 'Title'\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"Title\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"{{name}}\",\n    \"salary\": \"{{salary}}\",\n    \"age\": \"{{age}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/Activities",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"Activities"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Activity",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "d26a3ddb-6fde-48ea-892e-a117e885aa0e",
+								"exec": [
+									"pm.test(\"Data Validation Test : Get Activity 1 - Response inlcudes 'Title'\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"Title\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"{{name}}\",\n    \"salary\": \"{{salary}}\",\n    \"age\": \"{{age}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/Activities/1",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"Activities",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Activity",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "85b7589c-f6bb-44ec-b594-7c45a3fec487",
+								"exec": [
+									"pm.test(\"Data Validation Test : Create new activity - Response inlcudes 'Visit the moon'\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"Visit the moon\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"Title\": \"Visit the moon\",\n  \"DueDate\": \"2021-09-27T03:36:31.535Z\",\n  \"Completed\": false\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/Activities/",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"Activities",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Activity",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "26120143-1610-4829-89c5-34f83b1f3392",
+								"exec": [
+									"pm.test(\"Data Validation Test : Update activity - Response inlcudes 'true'\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"true\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"Title\": \"Visit the moon\",\n  \"DueDate\": \"2021-09-27T03:36:31.535Z\",\n  \"Completed\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/Activities/0",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"Activities",
+								"0"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		}
+	],
+	"protocolProfileBehavior": {}
+}
