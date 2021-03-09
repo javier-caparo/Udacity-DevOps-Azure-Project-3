@@ -10,6 +10,7 @@ CI / CD Test Automation Pipeline - Azure DevOps - Terraform - JMeter -Selenium -
 ## Dependencies
 | Dependency | Link |
 | ------ | ------ |
+| Packer | |
 | Terraform | https://www.terraform.io/downloads.html |
 | JMeter |  https://jmeter.apache.org/download_jmeter.cgi|
 | Postman | https://www.postman.com/downloads/ |
@@ -68,7 +69,26 @@ az ad sp create-for-rbac --name="UdacityProject3" --role="Contributor"
 
 > Take notes of **appId**, **password**, and **tenant** as will be used later on terraform
 
-7.  On your terminal create a SSH key
+5. Create a resourcegroup for your VM image using Packer and build the Image ( Ubuntu 18.04)
+
+```bash
+az group create -n RG-myPackerImage -l eastus2
+packer --version
+cd packer
+packer build ubuntu-image.json
+cd..
+pwd
+```
+
+> Here you will get an Ubuntu 18.04 VM Image, which will be used on terraform to create the VM.!!!
+
+```bash
+==> azure-arm:  -> Image ResourceGroupName   : 'RG-myPackerImage'
+==> azure-arm:  -> Image Name                : 'myPackerImage'
+==> azure-arm:  -> Image Location            : 'eastus2'
+```
+
+6.  On your terminal create a SSH key
 
 ```bash
 ssh-keygen -t rsa
@@ -82,6 +102,7 @@ ssh-keyscan github.com
 8. From the terminal, change into terraform directory
 
 ```bash
+cd
 cd terraform
 ```
 
@@ -94,10 +115,10 @@ terraform validate
 
 ```
 
-10. Execute terraform to create the backend infraestructure
+10. Execute terraform to create the backend infrastructure
 
 ```bash
-terraform plan
+terraform plan 
 terraform apply
 ```
 
