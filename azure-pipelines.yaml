@@ -6,18 +6,18 @@
 trigger:
   - main
   
-  variables:
-    # Azure Resource Manager connection created during pipeline creation
-    azureServiceConnectionId: 'e62bbea0-5e9d-4923-ae2d-1e2735ea5e1'
+variables:
+  # Azure Resource Manager connection created during pipeline creation
+  azureServiceConnectionId: 'e62bbea0-5e9d-4923-ae2d-1e2735ea5e1'
   
-    # Agent VM image name
-    vmImageName: 'Ubuntu-18.04'
+  # Agent VM image name
+  vmImageName: 'Ubuntu-18.04'
   
-    # Project root folder. Point to the folder containing manage.py file.
-    projectRoot: $(System.DefaultWorkingDirectory)
+  # Project root folder. Point to the folder containing manage.py file.
+  projectRoot: $(System.DefaultWorkingDirectory)
     
-    # Python version: 3.6
-    pythonVersion: '3.6.9'
+  # Python version: 3.6
+  pythonVersion: '3.6.9'
 
 stages:
   - stage: Build
