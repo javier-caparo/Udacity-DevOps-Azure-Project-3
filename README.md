@@ -145,6 +145,7 @@ Testing agent connection.
 
 * Create the Service Connection  in Project Settings > Pipelines > Service Connection
 
+> be sure that you are verified and authenticated here!!!
 > get the url to have the Service Connection ID:
 https://dev.azure.com/<organiztion>/<project>/_apis/serviceendpoint/endpoints?api-version=5.0-preview.2
  

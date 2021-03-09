@@ -1,31 +1,12 @@
-# Python to Linux Web App on Azure
-# Build your Python project and deploy it to Azure as a Linux Web App.
-# Change python version to one thats appropriate for your application.
-# https://docs.microsoft.com/azure/devops/pipelines/languages/python
-
-trigger:
-  - main
-  
+name: Azure Pipelines
 variables:
-  # Azure Resource Manager connection created during pipeline creation
-  azureServiceConnectionId: 'e62bbea0-5e9d-4923-ae2d-1e2735ea5e1'
-  
-  # Agent VM image name
-  vmImageName: 'ubuntu-18.04'
-  
-  # Project root folder. Point to the folder containing manage.py file.
-  projectRoot: $(System.DefaultWorkingDirectory)
-    
-  # Python version: 3.6
-  pythonVersion: '3.6.9'
-
+  python.version: "3.7.6"
 stages:
   - stage: Build
-    displayName: Build Stage
     jobs:
-      - job: BuildJob
+      - job: Build
         pool:
-          name: $(vmImageName)
+          name: Hosted Ubuntu 1604
         steps:
           - task: InstallSSHKey@0
             inputs:
@@ -79,3 +60,137 @@ stages:
           - publish: $(Build.ArtifactStagingDirectory)/$(Build.BuildId)-project.zip
             displayName: "Upload Package"
             artifact: drop-project
+
+  - stage: Deploy
+    jobs:
+      - deployment: FakeRestAPI
+        pool:
+          vmImage: "Ubuntu-18.04"
+        environment: "TEST"
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: AzureWebApp@1
+                  displayName: "Deploy Azure Web App"
+                  inputs:
+                    azureSubscription: "e62bbea0-5e9d-4923-ae2d-1e2735ea5e1e"
+                    appName: "jc-test-AppService"
+                    appType: webApp
+                    package: $(Pipeline.Workspace)/drop-fakerestapi/$(Build.BuildId)-fakerestapi.zip
+
+      - deployment: VMDeploy
+        displayName: CITesting
+        environment:
+          name: CITESTING
+          resourceType: VirtualMachine
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: DownloadPipelineArtifact@2
+                  inputs:
+                    artifact: "drop-project"
+                    path: $(Build.SourcesDirectory)
+
+                - task: Bash@3
+                  displayName: "Install Dependencies"
+                  inputs:
+                    targetType: "inline"
+                    script: |
+                      #! /bin/bash
+
+                      # ------------- Install Jmeter -------------
+                      if test -f "/usr/bin/jmeter"
+                      then
+                        echo 'Jmeter already installed'
+                      else
+                        echo "Changing directory to /home/udacity ..."
+                        cd /home/udacity                        
+                        echo "Downloading Jmeter ..."
+                        wget https://downloads.apache.org//jmeter/binaries/apache-jmeter-5.3.tgz
+
+                        echo "Unpacking jmeter tgz ..."
+                        tar -xzvf apache-jmeter-5.3.tgz
+                        echo "Create symlink to jmeter bin file"
+                        sudo ln -s /home/udacity/apache-jmeter-5.3/bin/jmeter /usr/bin/jmeter
+                        echo "Removing jmeter tgz ..."
+                        sudo rm -rf apache-jmeter-5.3.tgz
+                      fi
+
+                      # ------------- Install Chromedriver -------------
+                      if test -f "usr/bin/chromedriver"
+                      then
+                        echo 'Chromedriver is already installed'
+                      else
+                        echo "Changing directory to /home/udacity ..."
+                        cd /home/udacity        
+                        wget https://chromedriver.storage.googleapis.com/87.0.4280.88/chromedriver_linux64.zip
+                        unzip chromedriver_linux64.zip
+                        sudo mv chromedriver -t /usr/bin
+                        echo "Removing chromedriver_linux64.zip ..."
+                        rm -rf chromedriver_linux64.zip
+                      fi
+
+                      if test -f "usr/bin/java"
+                      then
+                        echo "JRE is already installed"
+                      else
+                        echo "Install default JRE ..."
+                        sudo apt install default-jre -y
+                      fi
+
+                - task: ExtractFiles@1
+                  inputs:
+                    archiveFilePatterns: "$(Pipeline.Workspace)/drop-project/$(Build.BuildId)-project.zip"
+                    destinationFolder: "$(Pipeline.Workspace)/project"
+                    cleanDestinationFolder: true
+
+                - task: Bash@3
+                  displayName: "Run Selenium tests"
+                  inputs:
+                    targetType: "inline"
+                    script: |
+                      #! /bin/bash
+
+                      # ------------- Run Selenium tests -------------
+                      cd ..
+                      if test -f '/var/logs/selenium/selenium_log.txt'
+                      then
+                        sudo chmod 777 /var/logs/selenium/selenium_log.txt
+                        python3 project/s/selenium/selenium_test.py
+                      else
+                        echo "Creating selenium log file"
+                        sudo mkdir -p /var/logs/selenium
+                        sudo touch /var/logs/selenium/selenium_log.txt
+                        sudo chmod 775 -R /var/logs      
+                        sudo chmod 777 /var/logs/selenium/selenium_log.txt                  
+                        echo "Running selenium tests ..."
+                        python3 project/s/selenium/selenium_test.py
+                      fi
+
+                - task: Bash@3
+                  displayName: "Run Jmeter tests"
+                  inputs:
+                    targetType: "inline"
+                    script: |
+                      #! /bin/bash
+
+                      # --------- Preparing to run Jmeter tests HTML report dirs -------------
+                      echo "Changing into Project jmeter dir ..."
+                      cd $(Pipeline.Workspace)/project/s/jmeter
+                      echo "Creating HTML report directories ..."
+                      mkdir stress_test_html_report endurance_test_html_report
+                      echo "Clearing previous results and html reports ..."
+                      rm -rf *.csv stress_test_html_report/* endurance_test_html_report/*
+                      echo "Preparing to run Jmeter tests ..."
+
+                      # --------- Run stress test --------------
+                      echo "Running stress test ..."
+                      jmeter -n -t stress_test_suite.jmx -l stress_test_result.csv -e -o stress_test_html_report/
+                      echo "HTML report written to -----> jmeter/stress_test_html_report"
+
+                      # --------- Run endurance test --------------
+                      echo "Running endurance test ..."
+                      jmeter -n -t endurance_test_suite.jmx -l endurance_test_results.csv -e -o endurance_test_html_report/
+                      echo "HTML report written to -----> jmeter/endurance_test_html_report"
