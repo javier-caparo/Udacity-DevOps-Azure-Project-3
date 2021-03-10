@@ -20,10 +20,13 @@ stages:
               rootFolderOrFile: "$(System.DefaultWorkingDirectory)/fakerestapi"
               includeRootFolder: false
               archiveType: "zip"
-              archiveFile: "(Build.ArtifactStagingDirectory)/$(Build.BuildId)-fakerestapi.zip"
-          - publish: $(Build.ArtifactStagingDirectory)/$(Build.BuildId)-fakerestapi.zip
-            displayName: "Upload Package"
-            artifact: drop-fakerestapi
+              archiveFile: '(Build.StagingDirectory)/$(Build.BuildId)-fakerestapi.zip'
+
+          - task: PublishPipelineArtifact@1
+            displayName: "Upload farestapi Package"
+            inputs:
+              targetPath: $(Build.StagingDirectory)/$(Build.BuildId)-fakerestapi.zip
+              artifactName: drop-fakerestapi
 
           - task: ArchiveFiles@2
             displayName: "Archive Selenium UI Tests"
@@ -31,7 +34,7 @@ stages:
               rootFolderOrFile: "$(System.DefaultWorkingDirectory)/selenium"
               includeRootFolder: false
               archiveType: "zip"
-              archiveFile: "$(Build.ArtifactStagingDirectory)/selenium-tests.zip"
+              archiveFile: '$(Build.StagingDirectory)/selenium-tests.zip'
               replaceExistingArchive: true
-          - upload: $(Build.ArtifactStagingDirectory)/selenium-tests.zip
+          - upload: $(Build.StagingDirectory)/selenium-tests.zip
             artifact: selenium
