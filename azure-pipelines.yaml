@@ -44,7 +44,7 @@ stages:
     jobs:
     - deployment: FakeRestAPI
       pool:
-        vmImage: 'ubuntu-18.04'
+        vmImage: 'Ubuntu-18.04'
       environment: 'WEBAPP-TEST'
       strategy:
         runOnce:
@@ -54,7 +54,7 @@ stages:
               displayName: 'Deploy Azure Web App'
               inputs:
                 azureSubscription: 'e62bbea0-5e9d-4923-ae2d-1e2735ea5e1e'
-                appType: 'webApp'
+                appType: 'webAppLinux'
                 appName: 'jc-test-AppService'
                 package: '$(Pipeline.Workspace)/drop-fakerestapi/$(Build.BuildId)-fakerestapi.zip'
                 deploymentMethod: 'auto'
@@ -81,12 +81,12 @@ stages:
                   # sudo apt-get install -y chromium-browser
                   # pip3 install selenium
                   
-                  # download chrome driver
+                  # download chrome driver v89
                   FILE=chromedriver_linux64.zip
                   if [ -f "$FILE" ]; then
                     echo "$FILE exists."
                   else
-                    wget https://chromedriver.storage.googleapis.com/87.0.4280.88/chromedriver_linux64.zip
+                    wget https://chromedriver.storage.googleapis.com/89.0.4389.23/chromedriver_linux64.zip
                   fi
                   # install chrome driver
                   unzip chromedriver_linux64.zip
