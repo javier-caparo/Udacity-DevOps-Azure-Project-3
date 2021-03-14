@@ -16,7 +16,7 @@ mkdir -p $R_DIR
 
 rm -f $T_DIR/test-plan.jtl $T_DIR/jmeter.log  > /dev/null 2>&1
 
-./run.sh $rootPath -Dlog_level.jmeter=DEBUG \
+./run-endurance-test.sh $rootPath -Dlog_level.jmeter=DEBUG \
 	-Jhost=$host \
 	-n -t /test/$testFile -l $T_DIR/endurance-endurance-plan.jtl -j $T_DIR/endurance-jmeter.log \
 	-e -o $R_DIR
