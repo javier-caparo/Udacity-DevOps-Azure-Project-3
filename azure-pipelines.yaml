@@ -175,4 +175,24 @@ stages:
           testResultsFormat: 'JUnit'
           testResultsFiles: '$(System.DefaultWorkingDirectory)/Results/*.xml'
 
-
+  - stage: JMeterTests
+    displayName: JMeter Tests
+    jobs:
+      - job: jmeter
+        pool:
+          vmImage: ubuntu-latest
+        displayName: Run JMeter tests
+        steps:
+        - task: Bash@3
+          displayName: Execute JMeter tests
+          inputs:
+            targetType: filePath
+            filePath: 'jmeter/test-endurance.sh'
+            arguments: '$PWD EnduranceTestSuite.jmx $(host)'
+            workingDirectory: jmeter
+            failOnStderr: true
+        - task: PublishPipelineArtifact@1
+          displayName: Publish JMeter Report
+          inputs:
+            targetPath: jmeter/report
+            artifact: jmeter
