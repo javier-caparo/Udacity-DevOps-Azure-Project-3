@@ -1,6 +1,11 @@
 # Udacity-DevOps-Azure-Project-3 - Ensuring Quality Releases
 CI / CD Test Automation Pipeline - Azure DevOps - Terraform - JMeter -Selenium - Postman
 
+
+## Badges
+
+[![Build Status](https://dev.azure.com/javiercaparo574/udacity-project-3/_apis/build/status/jfcb853.Udacity-DevOps-Azure-Project-3%20(2)?branchName=main)](https://dev.azure.com/javiercaparo574/udacity-project-3/_build/latest?definitionId=17&branchName=main)
+
 ## Intro
 
 * To use  a variety of industry leading tools, especially Microsoft Azure, to create disposable test environments and run a variety of automated tests with the click of a button.

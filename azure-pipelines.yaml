@@ -135,3 +135,44 @@ stages:
                   python3 uitests.py > ui-logs.log
                   cat ui-logs.log
                   sudo mv ui-logs.log /var/logs
+
+
+  - stage: IntegrationTests
+    displayName: Integration Tests
+    jobs:
+    - job: PostmanTests
+      displayName: Postman Tests
+      steps: 
+      - task: NodeTool@0
+        displayName: Install Node v12.X
+        inputs:
+          versionSpec: '12.x'
+      - task: CmdLine@2
+        displayName: Install Newman
+        inputs:
+          script: 'npm install newman'
+          workingDirectory: '$(System.DefaultWorkingDirectory)'
+      - task: CmdLine@2
+        displayName: Run Regression Tests
+        inputs:
+          script: 'newman run automatedtesting/postman/RegressionTestSuite.json -e automatedtesting/postman/RegressionTestSuite.Environment.json --delay-request 5000 --bail newman -x --reporters cli,junit --reporter-junit-export Results/RegressionTests.xml'
+          workingDirectory: '$(System.DefaultWorkingDirectory)'
+        continueOnError: true
+      - task: CmdLine@2
+        displayName: Run Data Validation Tests
+        inputs:
+          script: 'newman run automatedtesting/postman/DataValidationTestSuite.json -e automatedtesting/postman/DataValidationTestSuite.Environment.json --delay-request 5000 --bail newman -x --reporters cli,junit --reporter-junit-export Results/DataValidationTests.xml'
+          workingDirectory: '$(System.DefaultWorkingDirectory)'
+        continueOnError: true
+      - task: CmdLine@2
+        inputs:
+          script: 'ls'
+          workingDirectory: '$(System.DefaultWorkingDirectory)'
+      - task: PublishTestResults@2
+        displayName: Publish Test Reports
+        condition: always()
+        inputs:
+          testResultsFormat: 'JUnit'
+          testResultsFiles: '$(System.DefaultWorkingDirectory)/Results/*.xml'
+
+
