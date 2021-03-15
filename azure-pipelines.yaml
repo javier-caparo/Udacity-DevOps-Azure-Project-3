@@ -181,21 +181,41 @@ stages:
     - job: JMeterTests
       displayName: JMeterTests
       steps: 
+
       - task: JMeterInstaller@0
+        displayName: 'Install JMeter 5.2.1'
         inputs:
           jmeterVersion: '5.2.1'
+
       - task: Bash@3
-        displayName: EnduranceTest
+        displayName: 'Endurance Test Suite'
         inputs:
           targetType: 'inline'
-          script: 'jmeter -n -t jmeter/EnduranceTestSuite.jmx -Jresdir=jmeter/endurancepages.csv -l jmeter/report/enduranceresults.jtl -e -o jmeter/endurancereport'
+          script: 'jmeter -n -t jmeter/EnduranceTestSuite.jmx  -l endurance-test-report/endurance-results.jtl  -e -o endurance-test-report'
+      
+      - task: publishhtmlreport@1
+        displayName: 'Publish Endurance Test Results'
+        inputs:
+          htmlType: 'Jmeter'
+          JmeterReportsPath: '$(Build.SourcesDirectory)/endurance-test-report'
+      
       - task: Bash@3
-        displayName: StressTest
+        displayName: 'Stress Test Suite'
         inputs:
           targetType: 'inline'
-          script: 'jmeter -n -t jmeter/StressTestSuite.jmx -Jresdir=jmeter/stresspages.csv -l jmeter/report/stressresults.jtl -e -o jmeter/stressreport'
-      - task: PublishBuildArtifacts@1
+          script: 'jmeter -n -t jmeter/StressTestSuite.jmx  -l stress-test-report/stress-results.jtl -e -o stress-test-report'
+      
+      - task: publishhtmlreport@1
+        displayName: 'Publish Endurance Test Results'
         inputs:
-          PathtoPublish: 'jmeter'
-          ArtifactName: 'jmeter'
-          publishLocation: 'Container'
+          htmlType: 'Jmeter'
+          JmeterReportsPath: '$(Build.SourcesDirectory)/stress-test-report'
+      
+      - task: Bash@3
+        displayName: 'Print Performance Test Logs'
+        inputs:
+          targetType: 'inline'
+          script: |
+              ls -lah endurance-test-report/
+              ls -lah stress-test-report/
+              cat jmeter.log
