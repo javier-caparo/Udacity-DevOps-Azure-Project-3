@@ -178,21 +178,24 @@ stages:
   - stage: JMeterTests
     displayName: JMeter Tests
     jobs:
-      - job: jmeter
-        pool:
-          vmImage: ubuntu-latest
-        displayName: Run JMeter tests
-        steps:
-        - task: Bash@3
-          displayName: Execute JMeter tests
-          inputs:
-            targetType: filePath
-            filePath: 'jmeter/test-endurance.sh'
-            arguments: '$PWD EnduranceTestSuite.jmx'
-            workingDirectory: jmeter
-            failOnStderr: true
-        - task: PublishPipelineArtifact@1
-          displayName: Publish JMeter Report
-          inputs:
-            targetPath: jmeter/report
-            artifact: jmeter
+    - job: JMeterTests
+      displayName: JMeterTests
+      steps: 
+      - task: JMeterInstaller@0
+        inputs:
+          jmeterVersion: '5.2.1'
+      - task: Bash@3
+        displayName: EnduranceTest
+        inputs:
+          targetType: 'inline'
+          script: 'jmeter -n -t jmeter/EnduranceTestSuite.jmx -Jresdir=jmeter/endurancepages.csv -l jmeter/report/enduranceresults.jtl -e -o jmeter/endurancereport'
+      - task: Bash@3
+        displayName: StressTest
+        inputs:
+          targetType: 'inline'
+          script: 'jmeter -n -t jmeter/StressTestSuite.jmx -Jresdir=jmeter/stresspages.csv -l jmeter/report/stressresults.jtl -e -o jmeter/stressreport'
+      - task: PublishBuildArtifacts@1
+        inputs:
+          PathtoPublish: 'jmeter'
+          ArtifactName: 'jmeter'
+          publishLocation: 'Container'
