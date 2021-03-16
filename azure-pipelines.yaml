@@ -39,7 +39,7 @@ stages:
           - upload: $(Build.BuildId)/selenium-tests.zip
             artifact: selenium
 
-  - stage: Wait
+  - stage: First Wait
   # Delay further execution of a workflow by 2 minutes - to give time to add the VM to Piepline Environment
     jobs:
       - job: RunsOnServer
@@ -242,7 +242,7 @@ stages:
               ls -lah stress-test-report/
               cat jmeter.log
 
-  - stage: Wait
+  - stage: Second Wait
     # Delay
     # Delay further execution of a workflow by 3minutes - to play with alerts and logs
     jobs:
