@@ -2,99 +2,17 @@ name: Azure Pipelines
 variables:
   python.version: "3.7.6"
 stages:
-
-  - stage: Provision
-    jobs:
-    - job: provision_azure_infrastructure
-      displayName: Provision Azure Infrastructure using Terraform
-      pool:
-        vmImage: 'ubuntu-18.04'
-      steps:
-      - task: DownloadSecureFile@1
-        name: tfvardef
-        displayName: Download terraform.tfvars
-        inputs:
-          secureFile: 'terraform.tfvars' 
-
-      # Needed for Terraform VM deployment
-      - task: InstallSSHKey@0
-        inputs:
-          knownHostsEntry: 'known_hosts'
-          sshPublicKey: $(PUBLIC_KEY)
-          sshKeySecureFile: 'myKey'
-
-      - bash: |
-          cp $(Agent.TempDirectory)/terraform.tfvars $(System.DefaultWorkingDirectory)/terraform
-        displayName: Copy terraform.tfvars
-      - bash: |
-          echo Pipeline workspace dir is $(Pipeline.Workspace)
-          echo Terraform variable definition file is $(tfvardef.secureFilePath)
-          cd $(Agent.TempDirectory)
-          pwd
-          ls -la
-          cat myKey.pub
-          cd ~/.ssh/
-          pwd
-          ls -la
-          cat known_hosts
-          # $(System.DefaultWorkingDirectory) is equivalent to $(Build.SourcesDirectory)
-          cd $(System.DefaultWorkingDirectory)  
-          pwd
-          ls -la
-        displayName: Verify build environment (pre)
-      
-      # install Terraform Azure Pipelines Extension by Microsoft DevLabs
-      # https://marketplace.visualstudio.com/items?itemName=ms-devlabs.custom-terraform-tasks
-      - task: TerraformInstaller@0
-        displayName: Install Terraform
-        inputs:
-          terraformVersion: '0.14.7'
-
-      - task: TerraformTaskV1@0
-        displayName: Terraform Init
-        inputs:
-          provider: 'azurerm'
-          command: 'init'
-          backendServiceArm: 'AZServiceConnection'
-          backendAzureRmResourceGroupName: 'tstate'
-          backendAzureRmStorageAccountName: 'tstate3994'
-          backendAzureRmContainerName: 'tstate'
-          backendAzureRmKey: 'terraform.tfstate'
-          workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
-
-      - task: TerraformTaskV1@0
-        displayName: Terraform Apply
-        inputs:
-          provider: 'azurerm'
-          command: 'apply'
-          commandOptions: |
-            -auto-approve 
-          workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
-          environmentServiceNameAzureRM: 'AZServiceConnection'
-
-  - stage: Wait
-    # Delay
-    # Delay further execution of a workflow by 2 minutes - to add the VM at Piepline Environment
-    jobs:
-      - job: RunsOnServer
-        pool: Server
-        steps:
-        - task: Delay@1
-          inputs:
-            delayForMinutes: '2'
-
   - stage: Build
     jobs:
       - job: Build
         pool:
-          name: 'ubuntu-18.04'
+          name: Hosted Ubuntu 1604
         steps:
-          # Dont needt this here
-          #- task: InstallSSHKey@0
-          #  inputs:
-          #    knownHostsEntry: "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ=="
-          #    sshPublicKey: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCxk0N0whzgiOTrcAdHsjgfCr4+LkO7D2mo9/dDJ+Nz/wf2c+V8HYy0U4xXGoYSbGBCfjHNZzj7vmHP3nhNMabWVALOjjGDyTnb/F+hkpiwfp6vwXjjrLcyvoFv9J8VnPZXVMuA2vveVckkrAbo+a2/u425v55KWkqqNuzJIDEVT8/1FJefaE6LK/NMo1zswlGUxDn2+o2pEDGRc2S/2B/s9I0RVPFpaqVFWNnF/JmtOhetWhwZbHvXof3tXcIo6LzY2NET3FyES5TlOMhLdJaKWssAGsZfM8Nfo92yZ0LNAk8V2o4S8RCFYIiABi5yvxs4N1/Cz4uEbqnF/wF+t4N5"
-          #    sshKeySecureFile: "id_rsa"
+          - task: InstallSSHKey@0
+            inputs:
+              knownHostsEntry: "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ=="
+              sshPublicKey: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCxk0N0whzgiOTrcAdHsjgfCr4+LkO7D2mo9/dDJ+Nz/wf2c+V8HYy0U4xXGoYSbGBCfjHNZzj7vmHP3nhNMabWVALOjjGDyTnb/F+hkpiwfp6vwXjjrLcyvoFv9J8VnPZXVMuA2vveVckkrAbo+a2/u425v55KWkqqNuzJIDEVT8/1FJefaE6LK/NMo1zswlGUxDn2+o2pEDGRc2S/2B/s9I0RVPFpaqVFWNnF/JmtOhetWhwZbHvXof3tXcIo6LzY2NET3FyES5TlOMhLdJaKWssAGsZfM8Nfo92yZ0LNAk8V2o4S8RCFYIiABi5yvxs4N1/Cz4uEbqnF/wF+t4N5"
+              sshKeySecureFile: "id_rsa"
 
           - task: ArchiveFiles@2
             displayName: "Archive FakeRestAPI"
@@ -103,10 +21,9 @@ stages:
               includeRootFolder: false
               archiveType: "zip"
               archiveFile: '$(Build.BuildId)-fakerestapi.zip'
-              verbose: true
 
           - task: PublishPipelineArtifact@1
-            displayName: "Upload FakeRestApi Package"
+            displayName: "Upload farestapi Package"
             inputs:
               targetPath: $(Build.BuildId)-fakerestapi.zip
               artifactName: drop-fakerestapi
@@ -136,14 +53,14 @@ stages:
             - task: AzureWebApp@1
               displayName: 'Deploy Azure Web App'
               inputs:
-                azureSubscription: 'AZServiceConnection'
+                azureSubscription: 'e62bbea0-5e9d-4923-ae2d-1e2735ea5e1e'
                 appType: 'webAppLinux'
                 appName: 'jc-test-AppService'
                 package: '$(Pipeline.Workspace)/drop-fakerestapi/$(Build.BuildId)-fakerestapi.zip'
-                deploymentMethod: 'zipDeploy'
+                deploymentMethod: 'auto'
 
     - deployment: VMDeploy
-      displayName: VM Deployment
+      displayName: VM Deploy
       environment:
         name:  'VM-TEST'
         resourceType: VirtualMachine
@@ -178,7 +95,7 @@ stages:
                   sudo chmod +x /usr/bin/chromedriver
                   chromium-browser -version
                   chromedriver --version
-                  # agent log analytics need the log analytics id and primary
+                  # agent log analytics
                   wget https://raw.githubusercontent.com/Microsoft/OMS-Agent-for-Linux/master/installer/scripts/onboard_agent.sh && sh onboard_agent.sh -w 5c9b651a-3c93-46b7-8674-5d2cf2ad0e75 -s apaaCBe3AAFQkC3vUig+WFesWkbP4T+/as1Q9AA2XNX1nf5STgdLOzdZTrf8PEYAhAWPhZU5Mu3Ka/778FlRZg== -d opinsights.azure.com
                   sudo /opt/microsoft/omsagent/bin/service_control restart 5c9b651a-3c93-46b7-8674-5d2cf2ad0e75
             - download: current
@@ -303,3 +220,14 @@ stages:
               ls -lah endurance-test-report/
               ls -lah stress-test-report/
               cat jmeter.log
+
+  - stage: Wait
+    # Delay
+    # Delay further execution of a workflow by 3minutes - to play with alerts and logs
+    jobs:
+      - job: RunsOnServer
+        pool: Server
+        steps:
+        - task: Delay@1
+          inputs:
+            delayForMinutes: '3'
