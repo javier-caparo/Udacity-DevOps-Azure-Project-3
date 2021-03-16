@@ -41,13 +41,13 @@ stages:
 
   - stage: Wait
   # Delay further execution of a workflow by 2 minutes - to give time to add the VM to Piepline Environment
-  jobs:
-    - job: RunsOnServer
-      pool: Server
-      steps:
-      - task: Delay@1
-        inputs:
-          delayForMinutes: '2'
+    jobs:
+      - job: RunsOnServer
+        pool: Server
+        steps:
+        - task: Delay@1
+          inputs:
+            delayForMinutes: '2'
 
   - stage: WebAppDeployment
     displayName: Web App Deployment
