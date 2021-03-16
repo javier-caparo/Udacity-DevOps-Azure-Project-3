@@ -38,7 +38,17 @@ stages:
               replaceExistingArchive: true
           - upload: $(Build.BuildId)/selenium-tests.zip
             artifact: selenium
-    
+
+  - stage: Wait
+  # Delay further execution of a workflow by 2 minutes - to give time to add the VM to Piepline Environment
+  jobs:
+    - job: RunsOnServer
+      pool: Server
+      steps:
+      - task: Delay@1
+        inputs:
+          delayForMinutes: '2'
+
   - stage: WebAppDeployment
     displayName: Web App Deployment
     jobs:
@@ -127,15 +137,26 @@ stages:
               displayName: 'Download Selenium'
               artifact: selenium
             - task: Bash@3
-              displayName: UI Tests
+              displayName: Selenium UI Tests
               inputs:
                 targetType: 'inline'
                 script: |
                   unzip -o $(Pipeline.Workspace)/selenium/selenium-tests.zip -d .
-                  sudo mkdir /var/logs
-                  python3 uitests.py > ui-logs.log
-                  cat ui-logs.log
-                  sudo mv ui-logs.log /var/logs
+                  sudo mkdir -p /var/log/selenium
+                  sudo chmod 664 /var/log/selenium
+                  
+                  sudo python3 -u uitests.py 2>&1 | sudo tee -a /var/log/selenium/selenium-test.log
+                  # copy selenium log file to $(System.DefaultWorkingDirectory)/log/selenium/
+                  cd $(System.DefaultWorkingDirectory)
+                  mkdir -p log/selenium
+                  pwd
+                  sudo cp /var/log/selenium/selenium-test.log log/selenium/selenium-test.log
+                  ls -la
+            - task: PublishPipelineArtifact@1
+              displayName: Publish selenium logs
+              inputs:
+                targetPath: '$(System.DefaultWorkingDirectory)/log/selenium/selenium-test.log'
+                artifactName: 'drop-selenium-logs'
 
 
   - stage: IntegrationTests
@@ -230,4 +251,4 @@ stages:
         steps:
         - task: Delay@1
           inputs:
-            delayForMinutes: '3'
+            delayForMinutes: '2'
