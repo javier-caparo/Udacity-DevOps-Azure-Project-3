@@ -34,3 +34,6 @@ override.tf.json
 
 #Packer image with Credentials
 ubuntu-image.json
+
+#myKey private and public
+myKey*
