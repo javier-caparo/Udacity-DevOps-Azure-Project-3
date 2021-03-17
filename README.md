@@ -66,7 +66,7 @@ az account list --output table
     storage_account_name = "tstate3994"
     container_name       = "tstate"
     key                  = "terraform.tfstate"
-    access_key           = "j/bg+StBWOPqf5fQCPF+tCLFeGURmKEnE675v4aVN1RzyUW3+wlFLrq/dTon4XPrCRKMl5/Z79qNRGR7ZHBPQw=="
+    access_key           = "<access key>"
 ```
 
 4. Create a Log Analytics workspace using this script for simplicity
@@ -122,10 +122,37 @@ cd
 cd terraform
 ```
 
-8.1. Copy the **terraform-example,tfvars** as **terraform.tfvars** and fill the parameters marked as `to fill` as indicated with the values from steps  5, 6 and 7.
+8.1. Copy the **terraform-example.tfvars** as **terraform.tfvars** and fill the parameters marked as `to fill` as indicated with the values from steps  5, 6 and 7.
 
-8.2. Don't forget also modify the **main.tf** as was idnicated on step 3 !!!
+```bash
+cp terraform-example.tfvars terraform.tfvars
+nano terraform.tfvars
+```
 
+Complete the following parameters:
+| parameter| Link |
+| ------ | ------ |
+| subscription_id | subscription id |
+| client_id | service principal client app id |
+| client_secret | service principal password |
+| tenant_id | service principal tenandt id |
+| location | location |
+| resource_group | Resource Group |
+| application_type | Name of the APP - must be unique |
+| virtual_network_name | Name of the VNet |
+| packer_image | Packer Image ID  created earlier |
+| admin_username | admin username of the VM |
+| public_key_path | path of the id_rsa.pub file |
+
+8.2. Don't forget also modify the **main.tf** as was pointed on step 3 !!!
+
+```bash
+  backend "azurerm" {
+    storage_account_name = "tstate3994"
+    container_name       = "tstate"
+    key                  = "terraform.tfstate"
+    access_key           = "<access key>"
+```
 
 9. Execute terraform performing these commands in order:
 
@@ -146,23 +173,23 @@ terraform apply
 
 11. Login to Azure DevOPs and perform the following settings before to execute the Pipeline. 
 
-10.1. Install these Extensions :
+11.1. Install these Extensions :
 
 * JMeter (https://marketplace.visualstudio.com/items?itemName=AlexandreGattiker.jmeter-tasks&targetId=625be685-7d04-4b91-8e92-0a3f91f6c3ac&utm_source=vstsproduct&utm_medium=ExtHubManageList)
   
 * PublishHTMLReports (https://marketplace.visualstudio.com/items?itemName=LakshayKaushik.PublishHTMLReports&targetId=625be685-7d04-4b91-8e92-0a3f91f6c3ac&utm_source=vstsproduct&utm_medium=ExtHubManageList)
 
-10.2 Create a Project into your Organization
+11.2 Create a Project into your Organization
 
-10.3. Create the Service Connection  in Project Settings > Pipelines > Service Connection
+11.3. Create the Service Connection  in Project Settings > Pipelines > Service Connection
 
 > be sure that you are verified and authenticated here!!!
 > get the url to have the Service Connection ID:
-https://dev.azure.com/<organiztion>/<project>/_apis/serviceendpoint/endpoints?api-version=5.0-preview.2
+(https://dev.azure.com/<organiztion>/<project>/_apis/serviceendpoint/endpoints?api-version=5.0-preview.2)
  
-10.4. Add the private secure **id_rsa key** in Pieplines --> Library --> Secure files 
+11.4. Add the private secure **id_rsa key** in Pieplines --> Library --> Secure files 
 
-10.5. Create a Pipeline --> Environment named "VM-TEST" as is the one used in the pipeline.yaml. Copy the Registration script ( in Linux) since it must be executed on the created VM :
+11.5. Create a Pipeline --> Environment named "VM-TEST" as is the one used in the pipeline.yaml. Copy the Registration script ( in Linux) since it must be executed on the created VM :
 
 > Something similar to 
 ```bash
@@ -214,11 +241,11 @@ Build --> FirstWait --> WebApp Deployment --> UI Tests (selenium) -> Integration
 
 > WebApp Deployment : Deploy FakeRestAPI artifact to the terraform deployed Azure App Service. The deployed webapp URL is https://jc-test-appservice.azurewebsites.net where `jc-test-appservice` is the Azure App Service resource name in small letters.
 
-> UI Tests : Execution of the Selenium Tests an dpusblish its results
+> UI Tests : Execution of the Selenium Tests an publish its results using the VM-TEST environment.
 
-> Integration Tests: POstamn Regression and Data Validation tests (using newman/postman) and publishign the results.
+> Integration Tests: Postman Regression and Data Validation tests (using newman/postman) to the APP api created above and publishing the results.
 
-> JMeter TEsts:  Jmeter tests - Endurance & Stress Tests , and publish the results
+> JMeter TEsts:  JMeter Tests - Endurance & Stress Tests to the APP created aboce, and publish the results
 
 15. Set up email alerts in the App Service:
 
@@ -252,9 +279,7 @@ AppServiceHTTPLogs
 SELENIUM_LOGS_CL
 ```
 
-* After some minutes ( aprox 5 or 10) , check the email configured as an alert message will be received. and also check the Log Analytics Logs , so you can get visualize the logs and analyze with more detail.
-
-
+* After some minutes ( 3 to 10 minutes) , check the email configured as an alert message will be received. and also check the Log Analytics Logs , so you can get visualize the logs and analyze with more detail.
 
 ### Links
 
@@ -279,6 +304,13 @@ https://docs.microsoft.com/en-us/azure/azure-monitor/agents/data-sources-custom-
 
 > Hashicorp Terraform with Azure (https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subnet)
 
-
 > azure-pipelines-jmeter-extension (https://marketplace.visualstudio.com/items?itemName=AlexandreGattiker.jmeter-tasks&ssr=false#qna)
 (https://github.com/algattik/azure-pipelines-jmeter-extension/issues?utm_source=vsmp&utm_medium=ms%20web&utm_campaign=mpdetails)
+
+## License
+
+---
+
+MIT
+
+**Free Software, Hell Yeah!**

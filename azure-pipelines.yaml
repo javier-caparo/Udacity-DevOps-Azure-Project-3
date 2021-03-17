@@ -166,9 +166,10 @@ stages:
       displayName: Postman Tests
       steps: 
       - task: NodeTool@0
-        displayName: Install Node v12.X
+        displayName: Install Node v14.X
         inputs:
-          versionSpec: '12.x'
+          versionSpec: '14.x'
+          checkLatest: true
       - task: CmdLine@2
         displayName: Install Newman
         inputs:
