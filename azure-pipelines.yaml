@@ -40,7 +40,7 @@ stages:
             artifact: selenium
 
   - stage: FirstWait
-  # Delay further execution of a workflow by 2 minutes - to give time to add the VM to Piepline Environment
+  # Delay further execution of a workflow by 2 minutes - to give time to add the VM to Pipeline Environment
     jobs:
       - job: RunsOnServer
         pool: Server
@@ -213,7 +213,7 @@ stages:
         displayName: 'Endurance Test Suite'
         inputs:
           targetType: 'inline'
-          script: 'jmeter -n -t jmeter/EnduranceTestSuite.jmx  -l endurance-test-report/endurance-results.jtl  -e -o endurance-test-report'
+          script: 'jmeter -n -t jmeter/EnduranceTestSuitev2.jmx  -l endurance-test-report/endurance-results.jtl  -e -o endurance-test-report'
       
       - task: publishhtmlreport@1
         displayName: 'Publish Endurance Test Results'
@@ -225,10 +225,10 @@ stages:
         displayName: 'Stress Test Suite'
         inputs:
           targetType: 'inline'
-          script: 'jmeter -n -t jmeter/StressTestSuite.jmx  -l stress-test-report/stress-results.jtl -e -o stress-test-report'
+          script: 'jmeter -n -t jmeter/StressTestSuitev2.jmx  -l stress-test-report/stress-results.jtl -e -o stress-test-report'
       
       - task: publishhtmlreport@1
-        displayName: 'Publish Endurance Test Results'
+        displayName: 'Publish Stress Test Results'
         inputs:
           htmlType: 'Jmeter'
           JmeterReportsPath: '$(Build.SourcesDirectory)/stress-test-report'
@@ -241,14 +241,3 @@ stages:
               ls -lah endurance-test-report/
               ls -lah stress-test-report/
               cat jmeter.log
-
-  - stage: SecondWait
-    # Delay
-    # Delay further execution of a workflow by 3minutes - to play with alerts and logs
-    jobs:
-      - job: RunsOnServer
-        pool: Server
-        steps:
-        - task: Delay@1
-          inputs:
-            delayForMinutes: '2'
