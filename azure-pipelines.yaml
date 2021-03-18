@@ -43,4 +43,17 @@ stages:
       - task: TerraformInstaller@0
         displayName: Install Terraform
         inputs:
-          terraformVersion: '0.14.7'
+          terraformVersion: '0.14.8'
+      
+      - task: TerraformTaskV1@0
+        displayName: Terraform Init
+        inputs:
+          provider: 'azurerm'
+          command: 'init'
+          backendServiceArm: 'AZServiceConnection'
+          backendAzureRmResourceGroupName: 'tstate'
+          backendAzureRmStorageAccountName: 'tstate3994'
+          backendAzureRmContainerName: 'tstate'
+          backendAzureRmKey: 'terraform.tfstate'
+          workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
+    
