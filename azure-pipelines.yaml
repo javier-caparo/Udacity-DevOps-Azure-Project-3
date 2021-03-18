@@ -58,6 +58,14 @@ stages:
           workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
       
       - task: TerraformTaskV1@0
+        displayName: Terraform Validate
+        inputs:
+          provider: 'azurerm'
+          command: 'validate'
+          workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
+          environmentServiceNameAzureRM: 'AZServiceConnection'
+      
+      - task: TerraformTaskV1@0
         displayName: Terraform Plan
         inputs:
           provider: 'azurerm'
