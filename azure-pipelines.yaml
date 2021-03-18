@@ -14,14 +14,14 @@ variables:
   python.version: "3.7.6"
 stages:
   - stage: Provision
-  jobs:
-  - job: provision_azure_infrastructure
-    displayName: Provision Azure Infrastructure
-    pool:
-      vmImage: 'ubuntu-18.04'
-    steps:
-    - task: DownloadSecureFile@1
-      name: tfvardef
-      displayName: Download terraform.tfvars
-      inputs:
-        secureFile: 'terraform.tfvars'
+    jobs:
+    - job: provision_azure_infrastructure
+      displayName: Provision Azure Infrastructure
+      pool:
+        vmImage: 'ubuntu-18.04'
+      steps:
+      - task: DownloadSecureFile@1
+        name: tfvardef
+        displayName: Download terraform.tfvars
+        inputs:
+          secureFile: 'terraform.tfvars'
