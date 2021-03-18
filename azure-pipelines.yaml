@@ -56,4 +56,11 @@ stages:
           backendAzureRmContainerName: 'tstate'
           backendAzureRmKey: 'terraform.tfstate'
           workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
+      
+      - task: TerraformCLI@0
+        displayName: 'terraform plan'
+        inputs:
+          command: plan
+          environmentServiceName: 'AZServiceConnection'
+          publishPlanResults: 'Terraform_Plan'
     
