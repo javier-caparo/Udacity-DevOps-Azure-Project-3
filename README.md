@@ -196,7 +196,7 @@ terraform apply
 mkdir azagent;cd azagent;curl -fkSL -o vstsagent.tar.gz https://vstsagentpackage.azureedge.net/agent/2.183.1/vsts-agent-linux-x64-2.183.1.tar.gz;tar -zxvf vstsagent.tar.gz; if [ -x "$(command -v systemctl)" ]; then ./config.sh --environment --environmentname "VM-TEST" --acceptteeeula --agent $HOSTNAME .....
 ```
 
-> Enter to the linux VM created on terraform by ssh and execute the aboce script, you will get at the end a result like:
+> Enter the above script into the linux VM created on terraform by ssh and execute it, to get at the end a result like:
 
 ```bash
 Successfully added the agent
