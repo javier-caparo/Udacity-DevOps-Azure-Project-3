@@ -60,7 +60,8 @@ stages:
       - task: TerraformCLI@0
         displayName: 'terraform plan'
         inputs:
-          command: plan
+          command: 'plan'
           environmentServiceName: 'AZServiceConnection'
+          workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
           publishPlanResults: 'Terraform_Plan'
     
