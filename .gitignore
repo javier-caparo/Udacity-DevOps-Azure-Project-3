@@ -37,3 +37,6 @@ ubuntu-image.json
 
 #myKey private and public
 myKey*
+
+#zip files
+*.zip

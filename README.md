@@ -231,7 +231,7 @@ Testing agent connection.
 
 Build --> FirstWait --> WebApp Deployment --> UI Tests (selenium) -> Integration Tests (postman) --> JMeter -->secondWait 
 
-![img1](pipeline-stages.png)
+![img1](./images/pipeline-stages.png)
 
 * Explanation of the Stages
 
