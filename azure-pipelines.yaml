@@ -57,11 +57,11 @@ stages:
           backendAzureRmKey: 'terraform.tfstate'
           workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
       
-      - task: TerraformCLI@0
-        displayName: 'terraform plan'
-        inputs:
-          command: 'plan'
-          environmentServiceName: 'AZServiceConnection'
-          workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
-          publishPlanResults: 'Terraform_Plan'
+      - task: TerraformTaskV1@0
+      displayName: Terraform Plan
+      inputs:
+        provider: 'azurerm'
+        command: 'plan'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
+        environmentServiceNameAzureRM: 'AZServiceConnection'
     
