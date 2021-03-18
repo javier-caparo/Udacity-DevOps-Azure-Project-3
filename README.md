@@ -281,6 +281,20 @@ SELENIUM_LOGS_CL
 
 * After some minutes ( 3 to 10 minutes) , check the email configured as an alert message will be received. and also check the Log Analytics Logs , so you can get visualize the logs and analyze with more detail.
 
+
+## CLEAN UP
+
+* to clean the up the resources created by terraform. Enter to terraform directory again and destroy the plan created.
+
+```bash
+pwd
+cd terraform
+terraform destroy
+```
+
+* to delete your Project in Azure DevOPs
+Go to Project Settings --> Delete Project
+
 ### Links
 
 > Collect custom logs with Log Analytics agent in Azure Monitor (
