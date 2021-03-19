@@ -131,44 +131,49 @@ stages:
                   python3 uitests.py > ui-logs.log
                   sudo mv ui-logs.log /var/logs
                   
-  - stage: UITests
-    displayName: UI Tests
+  - stage: IntegrationTests
+    displayName: Integration Tests
     jobs:
-    - deployment: VMRunUITests
-      displayName: Run UI Tests
-      environment:
-        name:  'VM-TEST'
-        resourceType: VirtualMachine
-      strategy:
-        runOnce:
-          deploy:
-            steps:
-            - download: current
-              displayName: 'Download Selenium'
-              artifact: selenium
-            - task: Bash@3
-              displayName: Selenium UI Tests
-              inputs:
-                targetType: 'inline'
-                script: |
-                  unzip -o $(Pipeline.Workspace)/selenium/selenium-tests.zip -d .
-                  sudo mkdir -p /var/log/selenium
-                  sudo chmod 664 /var/log/selenium
-                  
-                  sudo python3 -u uitests.py 2>&1 | sudo tee -a /var/log/selenium/selenium-test.log
-                  # copy selenium log file to $(System.DefaultWorkingDirectory)/log/selenium/
-                  cd $(System.DefaultWorkingDirectory)
-                  mkdir -p log/selenium
-                  pwd
-                  sudo cp /var/log/selenium/selenium-test.log log/selenium/selenium-test.log
-                  ls -la
-            - task: PublishPipelineArtifact@1
-              displayName: Publish selenium logs
-              inputs:
-                targetPath: '$(System.DefaultWorkingDirectory)/log/selenium/selenium-test.log'
-                artifactName: 'drop-selenium-logs'
+    - job: PostmanTests
+      displayName: Postman Tests
+      steps: 
+      - task: NodeTool@0
+        displayName: Install Node v14.X
+        inputs:
+          versionSpec: '14.x'
+          checkLatest: true
+      - task: CmdLine@2
+        displayName: Install Newman
+        inputs:
+          script: 'npm install newman'
+          workingDirectory: '$(System.DefaultWorkingDirectory)'
+      - task: CmdLine@2
+        displayName: Run Regression Tests
+        inputs:
+          script: 'newman run postman/Regression_Test_Suite.postman_collection.json -e postman/Test_Suite.postman_environment.json --delay-request 5000 --bail newman -x --reporters cli,junit --reporter-junit-export Results/RegressionTests.xml --suppress-exit-code'
+          workingDirectory: '$(System.DefaultWorkingDirectory)'
+        continueOnError: true
+      - task: CmdLine@2
+        displayName: Run Data Validation Tests
+        inputs:
+          script: 'newman run postman/Data_Validation_Test_Suite.postman_collection.json -e postman/Data_Validation_Test_Suite.postman_environment.json --delay-request 5000 --bail newman -x --reporters cli,junit --reporter-junit-export Results/DataValidationTests.xml --suppress-exit-code'
+          workingDirectory: '$(System.DefaultWorkingDirectory)'
+        continueOnError: true
+      - task: CmdLine@2
+        inputs:
+          script: 'ls -la ./Results/'
+          workingDirectory: '$(System.DefaultWorkingDirectory)'
+      - task: PublishTestResults@2
+        displayName: Publish Test Reports
+        condition: always()
+        inputs:
+          testResultsFormat: 'JUnit'
+          testResultsFiles: '$(System.DefaultWorkingDirectory)/Results/*.xml'
 
-    - job: test_jmeter
+  - stage: JMeterTests
+    displayName: JMeter Tests
+    jobs:
+    - job: JMETERTests
       displayName: Test JMeter
       pool:
         vmImage: 'ubuntu-18.04'
@@ -225,44 +230,55 @@ stages:
           targetPath: '$(System.DefaultWorkingDirectory)/log/jmeter'
           artifactName: 'drop-jmeter-logs'
 
-
-  - stage: IntegrationTests
-    displayName: Integration Tests
+  - stage: UITests
+    displayName: UI Tests - Selenium
     jobs:
-    - job: PostmanTests
-      displayName: Postman Tests
-      steps: 
-      - task: NodeTool@0
-        displayName: Install Node v14.X
-        inputs:
-          versionSpec: '14.x'
-          checkLatest: true
-      - task: CmdLine@2
-        displayName: Install Newman
-        inputs:
-          script: 'npm install newman'
-          workingDirectory: '$(System.DefaultWorkingDirectory)'
-      - task: CmdLine@2
-        displayName: Run Regression Tests
-        inputs:
-          script: 'newman run postman/Regression_Test_Suite.postman_collection.json -e postman/Test_Suite.postman_environment.json --delay-request 5000 --bail newman -x --reporters cli,junit --reporter-junit-export Results/RegressionTests.xml --suppress-exit-code'
-          workingDirectory: '$(System.DefaultWorkingDirectory)'
-        continueOnError: true
-      - task: CmdLine@2
-        displayName: Run Data Validation Tests
-        inputs:
-          script: 'newman run postman/Data_Validation_Test_Suite.postman_collection.json -e postman/Data_Validation_Test_Suite.postman_environment.json --delay-request 5000 --bail newman -x --reporters cli,junit --reporter-junit-export Results/DataValidationTests.xml --suppress-exit-code'
-          workingDirectory: '$(System.DefaultWorkingDirectory)'
-        continueOnError: true
-      - task: CmdLine@2
-        inputs:
-          script: 'ls -la ./Results/'
-          workingDirectory: '$(System.DefaultWorkingDirectory)'
-      - task: PublishTestResults@2
-        displayName: Publish Test Reports
-        condition: always()
-        inputs:
-          testResultsFormat: 'JUnit'
-          testResultsFiles: '$(System.DefaultWorkingDirectory)/Results/*.xml'
+    - deployment: VMRunUITests
+      displayName: Run UI Tests
+      environment:
+        name:  'VM-TEST'
+        resourceType: VirtualMachine
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+            - download: current
+              displayName: 'Download Selenium'
+              artifact: selenium
+            - task: Bash@3
+              displayName: Selenium UI Tests
+              inputs:
+                targetType: 'inline'
+                script: |
+                  unzip -o $(Pipeline.Workspace)/selenium/selenium-tests.zip -d .
+                  sudo mkdir -p /var/log/selenium
+                  sudo chmod 664 /var/log/selenium
+                  
+                  sudo python3 -u uitests.py 2>&1 | sudo tee -a /var/log/selenium/selenium-test.log
+                  # copy selenium log file to $(System.DefaultWorkingDirectory)/log/selenium/
+                  cd $(System.DefaultWorkingDirectory)
+                  mkdir -p log/selenium
+                  pwd
+                  sudo cp /var/log/selenium/selenium-test.log log/selenium/selenium-test.log
+                  ls -la
+            - task: PublishPipelineArtifact@1
+              displayName: Publish selenium logs
+              inputs:
+                targetPath: '$(System.DefaultWorkingDirectory)/log/selenium/selenium-test.log'
+                artifactName: 'drop-selenium-logs'
 
-          
+  - stage: WaitUserApproval
+    displayName: User Approval
+    jobs:
+      - job: waitForValidation
+        displayName: Wait for external validation
+        pool: server
+        timeoutInMinutes: 120 # job times out in 3 days
+        steps:
+        - task: ManualValidation@0
+          timeoutInMinutes: 60 # task times out in 1 day
+          inputs:
+            notifyUsers: |
+              javier.caparo@gmail.com
+            instructions: 'Please validate the end of the Pipeline to destroy the Infraestructure'
+            onTimeout: 'resume'
