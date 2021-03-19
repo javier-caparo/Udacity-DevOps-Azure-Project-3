@@ -11,6 +11,7 @@ trigger:
 name: Azure Pipelines
 variables:
   python.version: "3.7.6"
+  applicationname: 'jc-test2-AppService'
 stages:
   - stage: ProvisionIaC
     displayName: Azure Resources Provisioning
@@ -121,14 +122,14 @@ stages:
             artifact: selenium
 
   - stage: Wait
-  # Delay further execution of a workflow by 2 minutes - to give time to add the VM to Pipeline Environment
+  # Delay further execution of a workflow by 3 minutes - to give time to add the VM to Pipeline Environment
     jobs:
       - job: RunsOnServer
         pool: Server
         steps:
         - task: Delay@1
           inputs:
-            delayForMinutes: '1'
+            delayForMinutes: '3'
 
   - stage: Deployments
     displayName: Deployments
@@ -146,7 +147,7 @@ stages:
               inputs:
                 azureSubscription: 'AZServiceConnection'
                 appType: 'webAppLinux'
-                appName: 'jc-test-AppService'
+                appName: $(applicationname)
                 package: '$(Pipeline.Workspace)/drop-fakerestapi/$(Build.BuildId)-fakerestapi.zip'
                 deploymentMethod: 'auto'
 
@@ -187,8 +188,8 @@ stages:
                   chromium-browser -version
                   chromedriver --version
                   # agent log analytics
-                  wget https://raw.githubusercontent.com/Microsoft/OMS-Agent-for-Linux/master/installer/scripts/onboard_agent.sh && sh onboard_agent.sh -w 5c9b651a-3c93-46b7-8674-5d2cf2ad0e75 -s apaaCBe3AAFQkC3vUig+WFesWkbP4T+/as1Q9AA2XNX1nf5STgdLOzdZTrf8PEYAhAWPhZU5Mu3Ka/778FlRZg== -d opinsights.azure.com
-                  sudo /opt/microsoft/omsagent/bin/service_control restart 5c9b651a-3c93-46b7-8674-5d2cf2ad0e75
+                  #wget https://raw.githubusercontent.com/Microsoft/OMS-Agent-for-Linux/master/installer/scripts/onboard_agent.sh && sh onboard_agent.sh -w 5c9b651a-3c93-46b7-8674-5d2cf2ad0e75 -s apaaCBe3AAFQkC3vUig+WFesWkbP4T+/as1Q9AA2XNX1nf5STgdLOzdZTrf8PEYAhAWPhZU5Mu3Ka/778FlRZg== -d opinsights.azure.com
+                  #sudo /opt/microsoft/omsagent/bin/service_control restart 5c9b651a-3c93-46b7-8674-5d2cf2ad0e75
             - download: current
               displayName: 'Download Selenium'
               artifact: selenium

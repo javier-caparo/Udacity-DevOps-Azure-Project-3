@@ -241,6 +241,14 @@ Build --> FirstWait --> WebApp Deployment --> UI Tests (selenium) -> Integration
 ```bash
 ./deploy_log_analytics_workspace.sh
 ```
+> Go the `WORKSPACE ID` & `WORKSPACE PRIMARY KEY`
+
+* Enter to the VM by ssh and install the OSMAgent.
+
+```bash
+wget https://raw.githubusercontent.com/Microsoft/OMS-Agent-for-Linux/master/installer/scripts/onboard_agent.sh && sh onboard_agent.sh -w <YOUR WORKSPACE ID> -s <YOUR WORKSPACE PRIMARY KEY>
+sudo /opt/microsoft/omsagent/bin/service_control restart <YOUR WORKSPACE ID>
+```
 
 13. Set up email alerts in the App Service:
 
