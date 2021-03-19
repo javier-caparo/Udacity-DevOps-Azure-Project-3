@@ -11,7 +11,7 @@ CI / CD Test Automation Pipeline - Azure DevOps - Terraform - JMeter -Selenium -
 
 * To use  a variety of industry leading tools, especially Microsoft Azure, to create disposable test environments and run a variety of automated tests with the click of a button.
 
-![intro.png](./images/intro.png)
+![intro](./images/intro.png)
 
 ## Dependencies
 | Dependency | Link |
@@ -154,42 +154,31 @@ Complete the following parameters:
     access_key           = "<access key>"
 ```
 
-9. Execute terraform performing these commands in order:
+9. Login to Azure DevOPs and perform the following settings before to execute the Pipeline. 
 
-```bash
-terraform init
-terraform fmt
-terraform validate
-```
-
-> Note: the result of last command must see : `Success! The configuration is valid.`
-
-10. Execute terraform to create the backend infrastructure using terraform:
-
-```bash
-terraform plan 
-terraform apply
-```
-
-11. Login to Azure DevOPs and perform the following settings before to execute the Pipeline. 
-
-11.1. Install these Extensions :
+9.1. Install these Extensions :
 
 * JMeter (https://marketplace.visualstudio.com/items?itemName=AlexandreGattiker.jmeter-tasks&targetId=625be685-7d04-4b91-8e92-0a3f91f6c3ac&utm_source=vstsproduct&utm_medium=ExtHubManageList)
   
 * PublishHTMLReports (https://marketplace.visualstudio.com/items?itemName=LakshayKaushik.PublishHTMLReports&targetId=625be685-7d04-4b91-8e92-0a3f91f6c3ac&utm_source=vstsproduct&utm_medium=ExtHubManageList)
 
-11.2 Create a Project into your Organization
+* Terraform (https://marketplace.visualstudio.com/items?itemName=ms-devlabs.custom-terraform-tasks&targetId=625be685-7d04-4b91-8e92-0a3f91f6c3ac&utm_source=vstsproduct&utm_medium=ExtHubManageList)
 
-11.3. Create the Service Connection  in Project Settings > Pipelines > Service Connection
+9.2 Create a Project into your Organization
+
+9.3. Create the Service Connection  in Project Settings > Pipelines > Service Connection
 
 > be sure that you are verified and authenticated here!!!
 > get the url to have the Service Connection ID:
 (https://dev.azure.com/<organiztion>/<project>/_apis/serviceendpoint/endpoints?api-version=5.0-preview.2)
  
-11.4. Add the private secure **id_rsa key** in Pieplines --> Library --> Secure files 
+9.4. Add into Pipelines --> Library --> Secure files these 2 files:
+the private secure file : **id_rsa key**
+the terraform tfvars file : **terraform.tfvars**
 
-11.5. Create a Pipeline --> Environment named "VM-TEST" as is the one used in the pipeline.yaml. Copy the Registration script ( in Linux) since it must be executed on the created VM :
+![img1](./images/Library-SecureFiles.png)
+
+9.5. Create a Pipeline --> Environment named "VM-TEST" as is the one used in the pipeline.yaml. Copy the Registration script ( in Linux) since it must be executed on the created VM :
 
 > Something similar to 
 ```bash
@@ -210,7 +199,7 @@ Testing agent connection.
            └─2333 ./externals/node10/bin/node ./bin/AgentService.js
 ```
 
-12. Modify the following lines on azure-pipelines.yaml before to update your own repo :
+10. Modify the following lines on azure-pipelines.yaml before to update your own repo :
 
 | Line #  | parameter | description |
 | ------ | ------ | ------ |
@@ -220,38 +209,44 @@ Testing agent connection.
 
 > Update your repo to get the new azure-pipelines.yaml file updated
 
-13. Create a New Pipeline in your Azure DevOPs Project
+11. Create a New Pipeline in your Azure DevOPs Project
 
  - Located at GitHub
  - Select your Repository
  - Existing Azure Pipelines YAML file
  - Choosing **azure-pipelines.yaml** file
 
-14. Wait the Pipeline is going to execute on the following Stages:
+12. Wait the Pipeline is going to execute on the following Stages:
 
 Build --> FirstWait --> WebApp Deployment --> UI Tests (selenium) -> Integration Tests (postman) --> JMeter -->secondWait 
 
-![img1](./images/pipeline-stages.png)
+![img2](./images/pipeline-stages.png)
 
 * Explanation of the Stages
 
+> Provisioning IaC : using Terraform , perform the provisioning of the IaC (RG, VNet, subnet, public IP, App Service, VM Linux).
+
 > Build: Build FakeRestAPI artifact by archiving the entire fakerestapi directory into a zip file and publishing the pipeline artifact to the artifact staging directory , same for Selenium py file.
 
-> FirstWait: just wait 2 minutes in case you still did not run the Environment Agent registration script on the created VM ( so still  have time to do it)
+> Wait: just wait 1minute in case you still did not run the Environment Agent registration script on the created VM ( so still have time to do it)
 
-> WebApp Deployment : Deploy FakeRestAPI artifact to the terraform deployed Azure App Service. The deployed webapp URL is https://jc-test-appservice.azurewebsites.net where `jc-test-appservice` is the Azure App Service resource name in small letters.
-
-> UI Tests : Execution of the Selenium Tests an publish its results using the VM-TEST environment.
+> Deployments : Deploy FakeRestAPI artifact to the Azure App Service ( created on IaC). The deployed webapp URL is https://jc-test-appservice.azurewebsites.net where `jc-test-appservice` is the Azure App Service resource name in small letters. And also deploy Selenium and Chromium to the VM created in IaC
 
 > Integration Tests: Postman Regression and Data Validation tests (using newman/postman) to the APP api created above and publishing the results.
 
-> JMeter TEsts:  JMeter Tests - Endurance & Stress Tests to the APP created aboce, and publish the results
+> JMeter TEsts:  JMeter Tests - Endurance & Stress Tests to the APP created above, and publish the results
 
-15. Set up email alerts in the App Service:
+> UI Tests : Execution of the Selenium Tests an publish its results using the VM-TEST environment.
+
+> WaitforApproval: Manual Intervention to approve the Pipeline and resume it ( 2 hours as maximum)
+
+> DestroyIaC: Destroy the IaC using terraform destroy. Clean up the resources.
+
+13. Set up email alerts in the App Service:
 
 * In the azure portal go to the app service > Alerts > New Alert Rule. Add an HTTP 404 condition and add a threshold value of 1. This will create an alert if there are two or more consecutive 404 alerts. Click Done. Then create an action group with notification type Email/SMS message/Push/Voice and choose the email option. Set the alert rule name and severity. Wait ten minutes for the alert to take effect. If you then visit the URL of the app service and try to go to a non-existent page more than once it should trigger the email alert.
 
-16. Set up log analytics workspace properly to get logs:
+14. Set up log analytics workspace properly to get logs:
 
 * Go to the app service > Diagnostic Settings > + Add Diagnostic Setting. Tick AppServiceHTTPLogs and Send to Log Analytics Workspace. Select a workspace (can be an existing default workspace) > Save. Go back to the app service > App Service Logs. Turn on Detailed Error Messages and Failed Request Tracing > Save. Restart the app service.
 
@@ -306,6 +301,10 @@ https://docs.microsoft.com/en-us/azure/azure-monitor/agents/data-sources-custom-
 
 > azure-pipelines-jmeter-extension (https://marketplace.visualstudio.com/items?itemName=AlexandreGattiker.jmeter-tasks&ssr=false#qna)
 (https://github.com/algattik/azure-pipelines-jmeter-extension/issues?utm_source=vsmp&utm_medium=ms%20web&utm_campaign=mpdetails)
+
+## Future Improvements
+
+* Use VMSS in Terraform
 
 ## License
 
