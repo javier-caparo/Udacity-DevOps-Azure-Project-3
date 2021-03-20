@@ -122,14 +122,15 @@ stages:
             artifact: selenium
 
   - stage: Wait
-  # Delay further execution of a workflow by 3 minutes - to give time to add the VM to Pipeline Environment
+  # Delay further execution of a workflow by 5 minutes - to give time to add the VM to Pipeline Environment
+  # and confgure the omsagent from Log analytics in the VM too.
     jobs:
       - job: RunsOnServer
         pool: Server
         steps:
         - task: Delay@1
           inputs:
-            delayForMinutes: '3'
+            delayForMinutes: '5'
 
   - stage: Deployments
     displayName: Deployments
@@ -345,13 +346,13 @@ stages:
       - job: waitForValidation
         displayName: Wait for external validation
         pool: server
-        timeoutInMinutes: 120 # job times out in 3 days
+        timeoutInMinutes: 90 # job times out in 90 minutes
         steps:
         - task: ManualValidation@0
-          timeoutInMinutes: 60 # task times out in 1 day
+          timeoutInMinutes: 80 # task times out in 80 minutes
           inputs:
             notifyUsers: |
-              javier.caparo@gmail.com
+              jcdev@outlook.com
             instructions: 'Please validate the end of the Pipeline to destroy the Infraestructure'
             onTimeout: 'resume'
   
