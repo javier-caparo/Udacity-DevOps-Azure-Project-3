@@ -1,3 +1,4 @@
 #!/bin/bash
 
-az deployment group create --resource-group RG-udacity_project3 --name la-wsp --template-file deploylaworkspacetemplate.json
+az group create --name RG-LogAnalytics --location eastus2
+az deployment group create --resource-group RG-LogAnalytics --name la-jc-wsp --template-file deploylaworkspacetemplate.json
