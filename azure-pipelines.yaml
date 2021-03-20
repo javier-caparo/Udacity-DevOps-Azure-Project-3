@@ -189,7 +189,7 @@ stages:
                   chromium-browser -version
                   chromedriver --version
                   # agent log analytics
-                  wget https://raw.githubusercontent.com/Microsoft/OMS-Agent-for-Linux/master/installer/scripts/onboard_agent.sh && sh onboard_agent.sh -w ba2f2875-7939-40f7-8fab-9fdfe5774935 -s rb9iiVdW/SUHbVCH4V83NX16EgaXKTEtX7WfGSxykJ3iCaZ/Tm/FFqigsvOAUajQZM0L5k9vAnyM3lD4Iv61cw== -d opinsights.azure.com
+                  wget https://raw.githubusercontent.com/Microsoft/OMS-Agent-for-Linux/master/installer/scripts/onboard_agent.sh && sh onboard_agent.sh -w ba2f2875-7939-40f7-8fab-9fdfe5774935 -s rb9iiVdW/SUHbVCH4V83NX16EgaXKTEtX7WfGSxykJ3iCaZ/Tm/FFqigsvOAUajQZM0L5k9vAnyM3lD4Iv61cw==
                   sudo /opt/microsoft/omsagent/bin/service_control restart ba2f2875-7939-40f7-8fab-9fdfe5774935
             - download: current
               displayName: 'Download Selenium'

@@ -265,9 +265,8 @@ sudo /opt/microsoft/omsagent/bin/service_control restart <YOUR WORKSPACE ID>
 * Set up custom logging , in the log analytics workspace go to Advanced Settings > Data > Custom Logs > Add + > Choose File. Select the file selenium.log > Next > Next. Put in the following paths as type Linux:
 
 /var/log/selenium/selenium.log
-/var/log/selenium
-/var/log/selenium/*.log
-Give it a name ( `SELENIUM_LOGS`) and click Done. Tick the box Apply below configuration to my linux machines.
+
+Give it a name ( `selenium_logs_CL`) and click Done. Tick the box Apply below configuration to my linux machines.
 
 * Go to the App Service web page and navigate on the links and also generate 404 not found , example:
 
